@@ -2,15 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 var task string
 
-type requestBody struct {
-	Message string `json:"Message"`
+type MessageResponse struct {
+	Task   string `json:"task"`
+	IsDone bool   `json:"is_done"`
 }
 
 func main() {
@@ -41,14 +41,20 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Задание обновлено: %s %t", req.Task, req.IsDone)
+	// Устанавливаем заголовок Content-Type в application/json
+	w.Header().Set("Content-Type", "application/json")
+
+	// Отправляем JSON в ответ
+	json.NewEncoder(w).Encode(req)
 
 }
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
-	var tasks []string
+	var messages []Message
 
-	DB.Model(&Message{}).Pluck("task", &tasks)
+	DB.Find(&messages)
 
-	json.NewEncoder(w).Encode(tasks)
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(messages)
 }
