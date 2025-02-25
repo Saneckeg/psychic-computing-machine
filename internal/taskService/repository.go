@@ -1,6 +1,7 @@
 package taskService
 
 import (
+	"encoding/json"
 	"gorm.io/gorm"
 	"log"
 )
@@ -8,7 +9,7 @@ import (
 type TaskRepository interface {
 	CreateTask(task Task) (Task, error)
 	GetAllTasks() ([]Task, error)
-	UpdateTaskByID(id uint, task map[string]interface{}) (Task, error)
+	UpdateTaskByID(id uint, task interface{}) (Task, error)
 	DeleteTaskByID(id uint) (Task, error)
 }
 
@@ -39,11 +40,27 @@ func (r *taskRepository) GetAllTasks() ([]Task, error) {
 	return task, err
 }
 
-func (r *taskRepository) UpdateTaskByID(id uint, updates map[string]interface{}) (Task, error) {
+func (r *taskRepository) UpdateTaskByID(id uint, updates interface{}) (Task, error) {
 	var task Task
 
 	if err := r.db.First(&task, id).Error; err != nil {
 		return task, err
+	}
+
+	var updatesMap map[string]interface{}
+
+	// Если updates уже map[string]interface{}, просто используем его
+	if casted, ok := updates.(map[string]interface{}); ok {
+		updatesMap = casted
+	} else {
+		// Если это структура, конвертируем её в map[string]interface{}
+		bytes, err := json.Marshal(updates)
+		if err != nil {
+			return task, err
+		}
+		if err := json.Unmarshal(bytes, &updatesMap); err != nil {
+			return task, err
+		}
 	}
 
 	result := r.db.Model(&task).Updates(updates)
@@ -81,7 +98,7 @@ func (s *TaskService) GetAllTasks() ([]Task, error) {
 	return s.repo.GetAllTasks()
 }
 
-func (s *TaskService) UpdateTaskByID(id uint, task map[string]interface{}) (Task, error) {
+func (s *TaskService) UpdateTaskByID(id uint, task interface{}) (Task, error) {
 	return s.repo.UpdateTaskByID(id, task)
 }
 
