@@ -15,5 +15,8 @@ migrate-down:
 run:
 	go run cmd/app/main.go
 
-gen:
-	oapi-codegen -config openapi/.openapi -include-tags tasks -package tasks openapi/openapi.yaml > ./internal/web/tasks/api.gen.go
+gen-%:
+	oapi-codegen -config openapi/.openapi -include-tags $* -package $* openapi/openapi.yaml > ./internal/web/$*/api.gen.go
+
+lint:
+	golangci-lint run --out-format=colored-line-number

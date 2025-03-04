@@ -4,17 +4,19 @@ import (
 	"SecondProject/internal/taskService"
 	"SecondProject/internal/web/tasks"
 	"context"
-	"encoding/json"
-	"github.com/gorilla/mux"
-	"net/http"
-	"strconv"
 )
 
-type Handler struct {
+type TaskHandler struct {
 	Service *taskService.TaskService
 }
 
-func (h *Handler) DeleteTaskId(ctx context.Context, request tasks.DeleteTaskIdRequestObject) (tasks.DeleteTaskIdResponseObject, error) {
+func TaskNewHandler(service *taskService.TaskService) *TaskHandler {
+	return &TaskHandler{
+		Service: service,
+	}
+}
+
+func (h *TaskHandler) DeleteTaskId(ctx context.Context, request tasks.DeleteTaskIdRequestObject) (tasks.DeleteTaskIdResponseObject, error) {
 	id := request.Id
 
 	_, err := h.Service.DeleteTaskByID(uint(id))
@@ -25,7 +27,7 @@ func (h *Handler) DeleteTaskId(ctx context.Context, request tasks.DeleteTaskIdRe
 	return nil, err
 }
 
-func (h *Handler) PatchTaskId(ctx context.Context, request tasks.PatchTaskIdRequestObject) (tasks.PatchTaskIdResponseObject, error) {
+func (h *TaskHandler) PatchTaskId(ctx context.Context, request tasks.PatchTaskIdRequestObject) (tasks.PatchTaskIdResponseObject, error) {
 	updatedTask, err := h.Service.UpdateTaskByID(uint(request.Id), request.Body)
 	if err != nil {
 		return nil, err
@@ -39,7 +41,7 @@ func (h *Handler) PatchTaskId(ctx context.Context, request tasks.PatchTaskIdRequ
 	return response, nil
 }
 
-func (h *Handler) GetTask(_ context.Context, _ tasks.GetTaskRequestObject) (tasks.GetTaskResponseObject, error) {
+func (h *TaskHandler) GetTask(_ context.Context, _ tasks.GetTaskRequestObject) (tasks.GetTaskResponseObject, error) {
 	allTasks, err := h.Service.GetAllTasks()
 	if err != nil {
 		return nil, err
@@ -58,7 +60,7 @@ func (h *Handler) GetTask(_ context.Context, _ tasks.GetTaskRequestObject) (task
 	return response, nil
 }
 
-func (h *Handler) PostTask(_ context.Context, request tasks.PostTaskRequestObject) (tasks.PostTaskResponseObject, error) {
+func (h *TaskHandler) PostTask(_ context.Context, request tasks.PostTaskRequestObject) (tasks.PostTaskResponseObject, error) {
 	taskRequest := request.Body
 
 	taskToCreate := taskService.Task{
@@ -78,54 +80,3 @@ func (h *Handler) PostTask(_ context.Context, request tasks.PostTaskRequestObjec
 	}
 	return response, nil
 }
-
-func NewHandler(service *taskService.TaskService) *Handler {
-	return &Handler{
-		Service: service,
-	}
-}
-
-func (h *Handler) PatchMessages(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	var updates map[string]interface{}
-	err = json.NewDecoder(r.Body).Decode(&updates)
-	if err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	updatedTask, err := h.Service.UpdateTaskByID(uint(id), updates)
-
-	w.Header().Set("Content-Type", "application/json")
-
-	json.NewEncoder(w).Encode(updatedTask)
-}
-
-//func (h *Handler) DeleteMessages(w http.ResponseWriter, r *http.Request) {
-//	vars := mux.Vars(r)
-//	idStr := vars["id"]
-//
-//	id, err := strconv.ParseUint(idStr, 10, 32)
-//	if err != nil {
-//		http.Error(w, "Invalid ID", http.StatusBadRequest)
-//		return
-//	}
-//
-//	_, err = h.Service.DeleteTaskByID(uint(id))
-//
-//	if err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//	w.WriteHeader(http.StatusOK)
-//	fmt.Fprintln(w, "Message deleted")
-//}
