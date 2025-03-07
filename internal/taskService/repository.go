@@ -9,6 +9,7 @@ import (
 type TaskRepository interface {
 	CreateTask(task Task) (Task, error)
 	GetAllTasks() ([]Task, error)
+	GetTasksByUserID(userID int) ([]Task, error)
 	UpdateTaskByID(id uint, task interface{}) (Task, error)
 	DeleteTaskByID(id uint) (Task, error)
 }
@@ -24,6 +25,7 @@ func NewTaskRepository(db *gorm.DB) *taskRepository {
 func (r *taskRepository) CreateTask(task Task) (Task, error) {
 	result := r.db.Create(&task)
 	if result.Error != nil {
+		log.Printf("Ошибка при создании задачи: %v", result.Error)
 		return Task{}, result.Error
 	}
 	return task, nil
@@ -38,6 +40,17 @@ func (r *taskRepository) GetAllTasks() ([]Task, error) {
 	}
 
 	return task, err
+}
+
+func (r *taskRepository) GetTasksByUserID(userID int) ([]Task, error) {
+	var tasks []Task
+
+	err := r.db.Where("user_id =?", userID).Find(&tasks).Error
+	if err != nil {
+		log.Println("Ошибка при получении задач пользователя:", err)
+	}
+
+	return tasks, err
 }
 
 func (r *taskRepository) UpdateTaskByID(id uint, updates interface{}) (Task, error) {

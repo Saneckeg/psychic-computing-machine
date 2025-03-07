@@ -46,7 +46,7 @@ func (u UserHandler) DeleteUsersId(ctx context.Context, request users.DeleteUser
 	if err != nil {
 		return nil, err
 	}
-	return nil, err
+	return users.DeleteUsersId204Response{}, nil
 }
 
 func (u UserHandler) PatchUsersId(ctx context.Context, request users.PatchUsersIdRequestObject) (users.PatchUsersIdResponseObject, error) {

@@ -3,11 +3,18 @@ info:
   title: API
   version: 1.0.0
 paths:
-  /task:
+  /tasks:
     get:
-      summary: Get all tasks
+      summary: Get all tasks or tasks specific user
       tags:
         - tasks
+      parameters:
+        - name: userID
+          in: query
+          description: The ID of the user to return the tasks for
+          required: false
+          schema:
+            type: integer
       responses:
         '200':
           description: A list of tasks
@@ -35,7 +42,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
-  /task/{id}:
+  /tasks/{id}:
     patch:
       summary: Update the task
       tags:
@@ -58,6 +65,9 @@ paths:
                   type: string
                 is_done:
                   type: boolean
+                user_id:
+                  type: integer
+                  nullable: true
       responses:
         '200':
           description: The update task
@@ -186,6 +196,9 @@ components:
           type: string
         is_done:
           type: boolean
+        user_id:
+          type: integer
+          format: uint
     User:
       type: object
       properties:

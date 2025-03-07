@@ -16,6 +16,10 @@ func (s *TaskService) GetAllTasks() ([]Task, error) {
 	return s.repo.GetAllTasks()
 }
 
+func (s *TaskService) GetTasksByUserID(userID int) ([]Task, error) {
+	return s.repo.GetTasksByUserID(userID)
+}
+
 func (s *TaskService) UpdateTaskByID(id uint, task interface{}) (Task, error) {
 	return s.repo.UpdateTaskByID(id, task)
 }

@@ -12,11 +12,6 @@ import (
 	"log"
 )
 
-type MessageResponse struct {
-	Task string `json:"task"`
-	Id   bool   `json:"id"`
-}
-
 func main() {
 
 	database.InitDB()

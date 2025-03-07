@@ -6,8 +6,5 @@ type Task struct {
 	gorm.Model
 	Task   string `json:"task"`
 	IsDone bool   `json:"is_done"`
-}
-
-func (Task) TableName() string {
-	return "messages"
+	UserID uint   `json:"user_id"`
 }
